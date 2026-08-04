@@ -278,5 +278,7 @@ a { color: var(--brand); text-decoration: none; font-weight: 600; }
   letter-spacing: 0.01em;
 }
 .card .status .from { color: #c0392b; }
-.card .status .arrow { color: var(--muted); padding: 0 2px; }
+/* A chevron rather than → : U+2192 has no glyph in Figtree or Inter and would
+   fall back to a host font, which differs between macOS and the container. */
+.card .status .arrow { color: var(--muted); padding: 0 3px; font-weight: 700; }
 .card .status .to { color: #1a7f43; }

@@ -192,11 +192,35 @@ back to GHL custom fields so an automation can email the doctor.
 
 ## Notes on typography
 
-_base.css pulls Figtree from Google Fonts, with a Helvetica/Arial fallback.
-render.js waits up to 3 seconds for the webfont and then renders regardless,
-so a blocked or slow font request degrades to the fallback instead of
-hanging a batch job. To lock typography down completely, self-host a woff2
-and swap the @import for an @font-face rule with a base64 src.
+Every glyph in a handout comes from a font embedded in the PDF. Nothing is
+fetched at render time and nothing is taken from the host machine, so the file
+a doctor receives is the file that was approved — on your laptop and in the
+container alike.
+
+`lib/fonts.js` inlines two faces as base64 `@font-face` rules:
+
+    Figtree   latin, weights 400/500/600/700
+    Inter     greek only, same weights, pinned by unicode-range
+
+Inter is there because Figtree ships no Greek subset, and the marker names are
+full of it — TGF-β1, TNF-α, NF-κB. Those three characters used to fall through
+to Helvetica Neue on macOS and Liberation Sans in the container: the same code
+producing visibly different clinical terms depending on where it ran. Declaring
+Inter under the same family name with `unicode-range` confines it to Greek, so
+templates and CSS need no knowledge of it.
+
+For the same reason the marker grid uses `›` rather than `→`. U+2192 has no
+glyph in either face and was the last character reaching for a host font.
+
+If you add copy with an unusual character, check it before shipping — a
+fallback is silent. Render a handout and look at what the PDF embedded:
+
+```bash
+strings output/<doctor>/<handout>.pdf | grep -oE "/BaseFont */[A-Za-z0-9+#-]+" | sort -u
+```
+
+Only `Figtree*` and `Inter*` should appear. Anything else is a character with no
+glyph, and it will render differently in production than it does for you.
 
 ## Project structure
 
