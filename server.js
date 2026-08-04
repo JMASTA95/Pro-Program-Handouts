@@ -128,6 +128,7 @@ app.post("/generate", upload.single("logo"), async (req, res) => {
         handouts: req.body.handouts,
         referral_link: req.body.referral_link,
         discount_code: req.body.discount_code,
+        discount_percent: req.body.discount_percent,
         logo_data_uri: await logoFromRequest(req),
       },
       { source: "form" }
@@ -155,6 +156,7 @@ app.post("/handout/generate", requireSecret, upload.single("logo"), async (req, 
         handouts,
         referral_link: req.body.referral_link,
         discount_code: req.body.discount_code,
+        discount_percent: req.body.discount_percent,
         logo_data_uri: (await logoFromRequest(req)) || null,
       },
       { source: req.get("x-handout-source") || "webhook" }
