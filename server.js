@@ -101,4 +101,4 @@ app.post("/generate", upload.single("logo"), async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Handout generator running on port ${PORT}`);
   console.log(`Storage mode: ${R2_ENABLED ? "Cloudflare R2" : "local /output"}`);
-});server.js
+});
