@@ -8,7 +8,10 @@
    color produces a coherent palette.
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap');
+/* Figtree is embedded as base64 at render time (lib/fonts.js). It used to be an
+   @import from Google Fonts; a blocked or slow fetch silently rendered the PDF in
+   the fallback font, which is not something a print template can risk. */
+{{font_css}}
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -264,3 +267,16 @@ a { color: var(--brand); text-decoration: none; font-weight: 600; }
 
 /* ---------- Page break between page 1 and page 2 ---------- */
 .pb { break-after: page; page-break-after: always; }
+
+/* Status pair for marker grids: "Too High -> Reduced". Additive — only the
+   handouts that use .card .status are affected. The red and green are fixed
+   rather than brand-derived because they carry meaning, not identity. */
+.card .status {
+  font-size: 8.4pt;
+  font-weight: 600;
+  margin: 0 0 3px;
+  letter-spacing: 0.01em;
+}
+.card .status .from { color: #c0392b; }
+.card .status .arrow { color: var(--muted); padding: 0 2px; }
+.card .status .to { color: #1a7f43; }
