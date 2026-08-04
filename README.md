@@ -5,10 +5,11 @@ form with their clinic name, logo, and brand color; the service merges those
 into the MediSkill at-home ozone therapy handouts and renders print-ready,
 two-page PDFs.
 
-Seven handouts are built and verified:
+Eight handouts are built and verified:
 
     Autoimmune Conditions
     Chronic Fatigue
+    CIRS & Mold Illness
     Dental & Gum Infections
     Joint Pain & Arthritis
     Performance, Recovery & Healthy Aging
@@ -21,6 +22,76 @@ Seven handouts are built and verified:
     npm start          # http://localhost:3000
 
 PDFs land in /output and download links appear on the form page.
+
+## Two ways in
+
+    POST /generate            The doctor-facing form at /. Multi-select; the
+                              download links come back to the page. Optionally
+                              gated by ACCESS_KEY on the URL.
+
+    POST /handout/generate    The webhook the public request form posts to.
+                              Requires the shared secret in the
+                              x-handout-secret header. One handout, delivered
+                              by ActiveCampaign.
+
+    POST /handout/retry/:id   Replays a queued failure with its stored payload.
+                              Body fields override it, so an operator can fix
+                              the bad value as part of the retry.
+
+Both go through lib/generate.js, so validation and the sheet lookup cannot
+drift apart between them.
+
+The request form needs four fields, and the names matter:
+
+    email            matched against the tracking sheet
+    practice_name    printed on the handout
+    use_case         the handout id (see GET /api/templates)
+    logo             file upload, optional
+
+## Where the referral link and code come from
+
+The doctor supplies their email; the referral link and discount code are looked
+up from the tracking sheet. Both are created by hand per practitioner, so the
+sheet is where that decision lives — no API can derive them.
+
+    npm run check:sheet                     headers, row count, completeness
+    npm run check:sheet -- doc@clinic.com   resolve one practitioner
+    npm run check:sheet -- --links          confirm every link resolves
+
+Typed values still win, so an operator can override during a retry.
+
+## Guard rails
+
+A printed handout is permanent, so each of these refuses the request rather
+than degrading quietly:
+
+    blank or missing code      refused; never printed blank
+    code over 20 characters    refused; it breaks the badge layout
+    scheme-less referral link  upgraded to https (the sheet records them
+                               scheme-less), then checked
+    link that does not resolve refused; never print a QR to a dead link
+    429 / 5xx from the shop    backed off and retried once before refusing
+
+Every refusal is appended to logs/exceptions.jsonl with its payload, so it can
+be retried without re-keying anything. Monday and email notices are optional
+on top of that.
+
+## Delivery
+
+    npm run check:ac      proves the two AC custom fields exist
+
+On success the service writes the handout URL and the use case to the
+contact's custom fields, then applies the handout-ready tag. An AC automation
+triggered on that tag sends the email, so marketing can change the wording
+without touching this repo.
+
+Set the automation to run MULTIPLE TIMES. AC's "tag is added" trigger only
+fires on a genuine transition, so the service removes the tag before
+re-applying it — otherwise a doctor's second handout would never be emailed.
+
+A multi-handout request from the form is delivered by the links on the page
+instead: AC holds one URL per contact, and emailing one of the five they asked
+for would be worse than emailing none.
 
 ## What gets customized
 
@@ -40,6 +111,10 @@ yields a coherent palette instead of asking for three colors.
 
     templates/_base.css     The entire design system. ONE place to change the
                             look of all handouts. Injected at render time.
+                            Figtree is embedded as base64 by lib/fonts.js —
+                            it used to be a Google Fonts @import, which meant
+                            a blocked fetch silently produced a PDF in the
+                            fallback face.
     templates/*.html        Content only. No styling.
 
 Every color in _base.css derives from var(--brand). Nothing is hardcoded.

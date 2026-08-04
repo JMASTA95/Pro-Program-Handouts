@@ -15,6 +15,7 @@ const puppeteer = require("puppeteer");
 const fs = require("fs");
 const path = require("path");
 const { derivePalette } = require("../lib/color");
+const { fontFaceCss } = require("../lib/fonts");
 
 const DIR = path.join(__dirname, "..", "templates");
 // Letter (11in) minus the 0.5in top and 0.62in bottom print margins, at 96dpi
@@ -22,7 +23,7 @@ const USABLE_H = 9.88 * 96;
 
 (async () => {
   const pal = derivePalette("#16457e");
-  const css = fs.readFileSync(path.join(DIR, "_base.css"), "utf8");
+  const css = fs.readFileSync(path.join(DIR, "_base.css"), "utf8").replace("{{font_css}}", fontFaceCss());
   const files = fs
     .readdirSync(DIR)
     .filter((f) => f.endsWith(".html") && !f.startsWith("_"))

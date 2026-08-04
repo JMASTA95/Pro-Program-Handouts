@@ -8,6 +8,7 @@
   h1 { font-size: 22px; }
   p.sub { color: #666; margin-bottom: 24px; }
   label { display: block; font-weight: bold; margin: 16px 0 4px; }
+  .hint { font-weight: normal; color: #78848f; font-size: 0.85em; }
   input[type="text"], input[type="email"], input[type="url"] {
     width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px;
   }
@@ -36,10 +37,10 @@
 <label>Logo (PNG or JPG)</label>
 <input type="file" id="logo" accept="image/*">
 
-<label>Referral Link (optional — auto-filled later via lookup)</label>
+<label>Referral Link <span class="hint">— leave blank; looked up from the tracking sheet by email</span></label>
 <input type="url" id="referral_link" placeholder="https://simplyo3.com/?ref=...">
 
-<label>Discount Code (optional — auto-filled later via lookup)</label>
+<label>Discount Code <span class="hint">— leave blank; looked up from the tracking sheet by email</span></label>
 <input type="text" id="discount_code" placeholder="LAKESIDE10">
 
 <label>Handouts</label>
