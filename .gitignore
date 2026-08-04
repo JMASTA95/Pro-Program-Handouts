@@ -5,3 +5,6 @@ uploads/*
 !uploads/.gitkeep
 .env
 .DS_Store
+
+# Exception queue records — runtime data, not source
+logs/
