@@ -23,7 +23,7 @@ const crypto = require("crypto");
 const path = require("path");
 const fs = require("fs");
 
-const { normalizeLogo } = require("./lib/logo");
+const { normalizeLogo, normalizeLogoFromUrl } = require("./lib/logo");
 const { listTemplates } = require("./lib/render");
 const { R2_ENABLED } = require("./lib/storage");
 const { generateOrQueue } = require("./lib/generate");
@@ -95,7 +95,8 @@ function requireSecret(req, res, next) {
 
 /** Turns a thrown HandoutError into the right status and body. */
 function failureResponse(res, err) {
-  const status = err.code === "BAD_PAYLOAD" || err.code === "UNKNOWN_TEMPLATE" ? 400 : 422;
+  const clientError = ["BAD_PAYLOAD", "UNKNOWN_TEMPLATE", "BAD_LOGO"].includes(err.code);
+  const status = clientError ? 400 : 422;
   return res.status(status).json({
     ok: false,
     code: err.code || "RENDER_FAILED",
@@ -105,14 +106,26 @@ function failureResponse(res, err) {
   });
 }
 
-/** Reads the uploaded logo (if any) into a normalized data URI, then discards the file. */
+/**
+ * Turns whatever logo the caller supplied into a normalized data URI.
+ *
+ * An upload wins when both are present. logo_url exists because Zapier and the
+ * hosted form builders pass a link to the file rather than the bytes, so
+ * requiring multipart would rule out every no-code automation.
+ */
 async function logoFromRequest(req) {
-  if (!req.file) return null;
-  try {
-    return await normalizeLogo(req.file.path);
-  } finally {
-    fs.unlink(req.file.path, () => {});
+  if (req.file) {
+    try {
+      return await normalizeLogo(req.file.path);
+    } finally {
+      fs.unlink(req.file.path, () => {});
+    }
   }
+  const url = req.body && (req.body.logo_url || req.body.logo);
+  if (url && typeof url === "string" && /^https?:\/\//i.test(url.trim())) {
+    return normalizeLogoFromUrl(url.trim());
+  }
+  return null;
 }
 
 // ---------------------------------------------------------------------------

@@ -31,8 +31,9 @@ PDFs land in /output and download links appear on the form page.
 
     POST /handout/generate    The webhook the public request form posts to.
                               Requires the shared secret in the
-                              x-handout-secret header. One handout, delivered
-                              by ActiveCampaign.
+                              x-handout-secret header. Delivered by
+                              ActiveCampaign, or by Zapier reading handout_url
+                              out of the response (see ZAPIER.md).
 
     POST /handout/retry/:id   Replays a queued failure with its stored payload.
                               Body fields override it, so an operator can fix
@@ -119,7 +120,7 @@ yields a coherent palette instead of asking for three colors.
 
 Every color in _base.css derives from var(--brand). Nothing is hardcoded.
 
-To add handout #8:
+To add another handout:
 
 1. Copy an existing template as a starting point.
 2. Change the `<!-- label: ... -->` comment on line 1. That label is what
@@ -189,6 +190,23 @@ Replace the built-in form with a GHL form + webhook: add a /webhook route
 that accepts GHL's JSON payload, fetch the logo from the GHL file URL, look
 up referral link and discount code by email, and write the finished R2 links
 back to GHL custom fields so an automation can email the doctor.
+
+## Delivery: ActiveCampaign or Zapier
+
+Either, and the code is the same. With `AC_*` set, the service writes two custom
+fields on the contact and applies the `handout-ready` tag for an automation to
+act on. With `AC_*` unset, `/handout/generate` returns `handout_url` in its
+response and whatever called it does the sending — see ZAPIER.md for that route,
+which needs no ActiveCampaign account at all.
+
+Set `SERVICE_BASE_URL` either way. Without it the returned URL is a relative
+path, which is useless in an email.
+
+Logos arrive one of two ways: a multipart upload (the built-in form) or a hosted
+file URL via `logo_url` (what Zapier and the form builders hand over). URL
+fetches refuse private and link-local addresses, cap the download, and re-check
+every redirect hop, because that URL is untrusted input the server is about to
+request.
 
 ## Notes on typography
 
