@@ -4,6 +4,8 @@ output/*
 uploads/*
 !uploads/.gitkeep
 .env
+.env.*
+!.env.example
 .DS_Store
 
 # Exception queue records — runtime data, not source
