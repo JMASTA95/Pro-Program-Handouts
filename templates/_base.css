@@ -1,0 +1,266 @@
+/* ============================================================
+   Handout design system — shared by every template.
+   Injected into each handout at render time via {{base_css}},
+   so this is the ONE place to change the look of all handouts.
+
+   Every color derives from --brand (the doctor's hex). The tint
+   and line values are computed in lib/color.js, so any brand
+   color produces a coherent palette.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --brand: {{brand_color}};
+  --tint:  {{brand_tint}};   /* ~6% brand on white — card fills */
+  --line:  {{brand_line}};   /* ~22% brand on white — hairlines */
+  --ink:   #22303c;
+  --muted: #78848f;
+}
+
+body {
+  font-family: 'Figtree', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 9.7pt;
+  line-height: 1.46;
+  color: var(--ink);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* ---------- Masthead: eyebrow + title + clinic logo ---------- */
+.masthead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+.eyebrow {
+  font-size: 7.5pt;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--brand);
+  margin-bottom: 7px;
+}
+h1 {
+  font-size: 19.5pt;
+  line-height: 1.15;
+  font-weight: 700;
+  color: #16202b;
+  letter-spacing: -0.01em;
+  max-width: 5.3in;
+}
+.logo { display: {{logo_display}}; flex: 0 0 auto; padding-top: 2px; }
+.logo img { max-width: 1.9in; max-height: 0.62in; }
+
+.rule { height: 3px; background: var(--brand); margin: 14px 0 6px; }
+
+/* ---------- Section heading: caps label + hairline to edge ---------- */
+.head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 9px 0 5px;
+  break-after: avoid;
+  page-break-after: avoid;
+}
+.head span {
+  font-size: 8.6pt;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+.head::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+p + p { margin-top: 7px; }
+em { font-style: italic; }
+strong { font-weight: 700; }
+
+/* ---------- Three-up card grid ---------- */
+.cards { display: flex; gap: 12px; margin-top: 9px; }
+.card {
+  flex: 1;
+  background: var(--tint);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 11px 12px;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+.card h3 {
+  font-size: 10.4pt;
+  font-weight: 700;
+  color: var(--brand);
+  line-height: 1.25;
+  margin-bottom: 5px;
+}
+.card p { font-size: 9pt; line-height: 1.46; }
+
+/* Evidence variant: small caps titles instead of sentence case */
+.cards.evidence .card h3 {
+  font-size: 8pt;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+/* ---------- Muted footnote callout ---------- */
+.note {
+  margin-top: 10px;
+  font-size: 8.5pt;
+  line-height: 1.5;
+  color: var(--muted);
+  break-inside: avoid;
+}
+.note b {
+  color: var(--brand);
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+/* ---------- Two-column block ---------- */
+.two { display: flex; gap: 26px; margin-top: 7px; }
+.two > div { flex: 1; }
+.two h4 {
+  font-size: 8.4pt;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--brand);
+  margin-bottom: 5px;
+}
+.two p { font-size: 9pt; }
+.two p + p { margin-top: 7px; }
+
+/* ---------- Routes table ---------- */
+table.routes { width: 100%; border-collapse: collapse; margin-top: 10px; }
+table.routes th {
+  font-size: 7.5pt;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--brand);
+  text-align: left;
+  padding: 0 10px 6px 0;
+  border-bottom: 1.5px solid var(--brand);
+}
+table.routes td {
+  padding: 4px 10px 4px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 9pt;
+  vertical-align: top;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+td.route { font-weight: 700; color: var(--brand); width: 1.45in; }
+td.reaches { width: 1.45in; color: var(--muted); }
+.tag {
+  display: inline-block;
+  font-size: 6.4pt;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  background: var(--brand);
+  color: #fff;
+  padding: 1.5px 5px;
+  border-radius: 2px;
+  margin-top: 4px;
+}
+
+/* ---------- Numbered clinician steps ---------- */
+ol.steps { list-style: none; counter-reset: s; }
+ol.steps li {
+  counter-increment: s;
+  position: relative;
+  padding-left: 22px;
+  margin-bottom: 4px;
+  font-size: 9pt;
+  line-height: 1.38;
+  break-inside: avoid;
+}
+ol.steps li::before {
+  content: counter(s);
+  position: absolute;
+  left: 0;
+  top: 1.5px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--brand);
+  color: #fff;
+  font-size: 7pt;
+  font-weight: 700;
+  text-align: center;
+  line-height: 15px;
+}
+
+/* ---------- Equipment + call to action ---------- */
+.equipment {
+  font-size: 8.5pt;
+  line-height: 1.42;
+  color: var(--muted);
+  margin-bottom: 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+}
+
+.cta {
+  display: {{referral_display}};
+  margin-top: 11px;
+  border: 1.5px solid var(--brand);
+  border-radius: 6px;
+  padding: 11px 13px;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+.cta-head {
+  font-size: 8.6pt;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--brand);
+  margin-bottom: 8px;
+}
+.cta-body { display: flex; gap: 14px; align-items: flex-start; }
+.cta-body ol.steps { flex: 1; }
+.cta-body ol.steps li { margin-bottom: 5px; }
+.qr { display: {{qr_display}}; flex: 0 0 auto; text-align: center; }
+.qr img { width: 0.7in; height: 0.7in; display: block; }
+.qr span {
+  display: block;
+  font-size: 6.2pt;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.code {
+  display: {{discount_display}};
+  background: var(--brand);
+  color: #fff;
+  font-weight: 700;
+  padding: 1.5px 7px;
+  border-radius: 3px;
+  letter-spacing: 0.07em;
+}
+a { color: var(--brand); text-decoration: none; font-weight: 600; }
+
+/* ---------- Source attribution ---------- */
+.attrib {
+  margin-top: 8px;
+  font-size: 7.1pt;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+/* ---------- Page break between page 1 and page 2 ---------- */
+.pb { break-after: page; page-break-after: always; }

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Handout Customizer</title>
+<style>
+  body { font-family: Helvetica, Arial, sans-serif; max-width: 560px; margin: 40px auto; padding: 0 20px; color: #222; }
+  h1 { font-size: 22px; }
+  p.sub { color: #666; margin-bottom: 24px; }
+  label { display: block; font-weight: bold; margin: 16px 0 4px; }
+  input[type="text"], input[type="email"], input[type="url"] {
+    width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px;
+  }
+  .checks label { font-weight: normal; margin: 4px 0; }
+  button { margin-top: 24px; padding: 10px 24px; font-size: 15px; border: none; border-radius: 5px; background: #1a6b8a; color: #fff; cursor: pointer; }
+  button:disabled { background: #999; }
+  #result { margin-top: 20px; }
+  #result a { display: block; margin: 4px 0; }
+  .error { color: #b00020; }
+</style>
+</head>
+<body>
+
+<h1>Customize Your Clinic Handouts</h1>
+<p class="sub">Select the handouts you want, add your branding, and we'll generate print-ready PDFs.</p>
+
+<label>Email</label>
+<input type="email" id="email" placeholder="doctor@clinic.com">
+
+<label>Clinic / Company Name</label>
+<input type="text" id="company_name" placeholder="Lakeside Wellness Clinic">
+
+<label>Brand Color</label>
+<input type="color" id="brand_color" value="#1a6b8a">
+
+<label>Logo (PNG or JPG)</label>
+<input type="file" id="logo" accept="image/*">
+
+<label>Referral Link (optional — auto-filled later via lookup)</label>
+<input type="url" id="referral_link" placeholder="https://simplyo3.com/?ref=...">
+
+<label>Discount Code (optional — auto-filled later via lookup)</label>
+<input type="text" id="discount_code" placeholder="LAKESIDE10">
+
+<label>Handouts</label>
+<div class="checks" id="template-list">Loading…</div>
+
+<button id="go">Generate My Handouts</button>
+<div id="result"></div>
+
+<script>
+  // Populate handout checkboxes from whatever templates exist on the server
+  fetch("/api/templates")
+    .then(r => r.json())
+    .then(templates => {
+      document.getElementById("template-list").innerHTML = templates
+        .map(t => `<label><input type="checkbox" name="handouts" value="${t.id}"> ${t.label}</label>`)
+        .join("");
+    });
+
+  document.getElementById("go").addEventListener("click", async () => {
+    const btn = document.getElementById("go");
+    const result = document.getElementById("result");
+    result.innerHTML = "";
+
+    const fd = new FormData();
+    fd.append("email", document.getElementById("email").value);
+    fd.append("company_name", document.getElementById("company_name").value);
+    fd.append("brand_color", document.getElementById("brand_color").value);
+    fd.append("referral_link", document.getElementById("referral_link").value);
+    fd.append("discount_code", document.getElementById("discount_code").value);
+
+    const logo = document.getElementById("logo").files[0];
+    if (logo) fd.append("logo", logo);
+
+    document.querySelectorAll('input[name="handouts"]:checked')
+      .forEach(cb => fd.append("handouts", cb.value));
+
+    btn.disabled = true;
+    btn.textContent = "Generating…";
+
+    try {
+      const res = await fetch("/generate", { method: "POST", body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Generation failed");
+      result.innerHTML = "<strong>Done! Your handouts:</strong>" +
+        data.files.map(f => `<a href="${f.url}" target="_blank">${f.template}.pdf</a>`).join("");
+    } catch (err) {
+      result.innerHTML = `<span class="error">${err.message}</span>`;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Generate My Handouts";
+    }
+  });
+</script>
+
+</body>
+</html>
